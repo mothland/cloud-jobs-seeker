@@ -55,17 +55,24 @@ def _get_var(name_lc: str, name_uc: str) -> Optional[str]:
 
 def _load_api_keys() -> List[str]:
     keys: List[str] = []
-    k1 = _get_var("theirstack_api_key", "THEIRSTACK_API_KEY")
-    k2 = _get_var("theirstack_api_key_2", "THEIRSTACK_API_KEY_2")
-    if k1:
-        keys.append(k1)
-    if k2 and k2 != k1:
-        keys.append(k2)
+
+    # Always start with the base key (no number)
+    base_key = _get_var("theirstack_api_key", "THEIRSTACK_API_KEY")
+    if base_key:
+        keys.append(base_key)
+
+    # Then check numbered keys up to 5
+    for i in range(2, 6):
+        k = _get_var(f"theirstack_api_key_{i}", f"THEIRSTACK_API_KEY_{i}")
+        if k and k not in keys:
+            keys.append(k)
+
     if not keys:
         raise RuntimeError(
-            "Missing theirstack_api_key (and optional theirstack_api_key_2). "
+            "Missing theirstack_api_key (and numbered variants). "
             "Set them as Work Pool env vars or Prefect Variables."
         )
+
     return keys
 
 _API_KEYS: List[str] = _load_api_keys()

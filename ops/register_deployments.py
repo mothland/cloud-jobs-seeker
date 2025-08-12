@@ -44,13 +44,14 @@ DATABASE_URL   = _get_required("database_url")
 
 # Titles by DB category (used inside each category deployment)
 TITLE_MAP: Dict[str, List[str]] = {
-    "data_engineer": ["Data Engineer", "Ingénieur Data", "Ingenieur data"],
+    "data_engineer": ["Data Engineer", "Ingénieur Data", "Ingenieur data", "data architect", "architecte data"],
     "data_analyst": ["Data Analyst"],
     "cloud_engineer": [
         "Cloud Engineer", "Cloud Architect",
         "Ingénieur cloud", "ingenieur cloud", "architecte cloud",
     ],
-    "dataops": ["DataOps", "Data Ops", "DataOps"],
+    "dataops": ["DataOps", "Data Ops", "Data-Ops"],
+    "mlops": ["MLOps", "ML Ops", "ML-Ops"]
     # Add more if you add rows in jobs.job_category_ref
 }
 
