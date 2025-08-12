@@ -96,10 +96,7 @@ async def register_for_category(cat: str) -> None:
         "fr_location_preset": "ile_de_france",
         "fr_posted_max_age_days": 7,
 
-        # weekly budget: 400/mo → ~100/wk; flow divides by (len(titles)*2)
-        "total_weekly_budget": 100,
-        # leave per_call_limit unset so it auto-computes from titles × countries
-        # "per_call_limit": 10,
+        "total_weekly_budget": 250,
     }
 
     name = f"{cat}-weekly"
