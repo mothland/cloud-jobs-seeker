@@ -18,7 +18,7 @@ from flows.db import connection
 from flows.ingest_offers import ingest_offers
 
 # -------------------------
-# strict config getters 😑
+# strict config getters
 # -------------------------
 def _prefect_var(name: str) -> str | None:
     try:
