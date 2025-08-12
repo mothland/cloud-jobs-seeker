@@ -42,7 +42,7 @@ def _get_required(name: str) -> str:
 
 # ======== REQUIRED CONFIG ======================================
 # Only accept lowercase names, from env or Prefect Variables
-GIT_REPO_URL  = _get_required("git_repo_url")
+GIT_REPO_URL = _get_required("git_repo_url")
 WORK_POOL_NAME = _get_required("work_pool_name")
 DATABASE_URL   = _get_required("database_url")  # fail fast if not provided
 # ===============================================================
@@ -74,9 +74,11 @@ async def fetch_categories() -> List[str]:
 
 async def register_for_category(cat: str) -> None:
     titles = TITLE_MAP.get(cat, [cat.replace("_", " ").title()])
+
+    # Group locations: 'idf' for France, 'geneva' for Switzerland
     plans = [
-        (f"{cat}-idf",    {"titles": titles, "category": cat, "location_preset": "idf",    "page_limit": 2, "per_page": 50}),
-        (f"{cat}-geneva", {"titles": titles, "category": cat, "location_preset": "geneva", "page_limit": 2, "per_page": 50}),
+        (f"{cat}-france", {"titles": titles, "category": cat, "location_preset": "idf", "page_limit": 2, "per_page": 50}),
+        (f"{cat}-switzerland", {"titles": titles, "category": cat, "location_preset": "geneva", "page_limit": 2, "per_page": 50}),
     ]
 
     for name, params in plans:
