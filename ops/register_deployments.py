@@ -48,6 +48,7 @@ DATABASE_URL   = _get_required("database_url")  # fail fast if not provided
 # ===============================================================
 
 # Titles to use per DB category (search filters)
+# (Adjust freely; we’ll create ONE deployment per title)
 TITLE_MAP: Dict[str, List[str]] = {
     "data_engineer": ["Data Engineer", "Ingénieur Data", "Ingenieur data"],
     "data_analyst": ["Data Analyst"],
@@ -77,43 +78,46 @@ async def fetch_categories() -> List[str]:
 def _mask_db_url(url: str) -> str:
     return re.sub(r"://([^:]+):([^@]+)@", r"://\1:***@", url)
 
-async def register_for_category(cat: str) -> None:
-    titles = TITLE_MAP.get(cat, [cat.replace("_", " ").title()])
+def _slug(s: str) -> str:
+    out = re.sub(r"[^a-zA-Z0-9]+", "-", s.strip().lower()).strip("-")
+    return out or "title"
 
-    # Single deployment per category; inside the flow we do a "fair split":
-    # - CH (Geneva) first with deeper page_limit and longer age window
-    # - FR (Île-de-France) next with tighter limits to avoid flooding
-    # These parameters are read by flows/ingest_offers.py
+async def register_for_title(cat: str, title: str) -> None:
+    """
+    One deployment per title.
+    Inside the flow we do the two-country split (CH + FR) with a per-call cap.
+    """
     params = {
-        "titles": titles,
+        # filters
+        "titles": [title],
         "category": cat,
+
+        # make the flow do two calls (CH then FR)
         "split_by_country": True,
 
-        # --- Switzerland (Geneva) slice ---
+        # country-specific freshness
         "ch_country_codes": ["CH"],
-        "ch_location_preset": "geneva",            # resolved inside the flow/filters
-        "ch_page_limit": 2,                        # give CH more pages
-        "ch_per_page": 50,
-        "ch_posted_max_age_days": 30,              # longer window to surface scarce jobs
+        "ch_location_preset": "geneva",
+        "ch_posted_max_age_days": 30,
 
-        # --- France (Île-de-France) slice ---
         "fr_country_codes": ["FR"],
-        "fr_location_preset": "ile_de_france",     # resolved inside the flow/filters
-        "fr_page_limit": 1,                        # restrict FR to avoid drowning CH
-        "fr_per_page": 50,
-        "fr_posted_max_age_days": 7,               # fresher window to trim the firehose
+        "fr_location_preset": "ile_de_france",
+        "fr_posted_max_age_days": 7,
+
+        # budget logic: 400/month -> 100/week; 5 titles × 2 countries = 10 calls → 10 per call
+        "total_weekly_budget": 100,
+        "per_call_limit": 10,   # hard cap each (title × country) pull to 10 items
     }
 
-    name = f"{cat}-frch-fairsplit"
+    name = f"{cat}-{_slug(title)}"  # e.g., cloud_engineer-cloud-engineer
     print(f"→ Registering deployment: {name} | params={params}")
 
-    # from_source is async — serverless pulls from your Git repo
     flow = await ingest_offers.from_source(
         source=GIT_REPO_URL,
         entrypoint="flows/ingest_offers.py:ingest_offers",
     )
 
-    # Every 7 days (weekly) — adjust if needed
+    # Weekly schedule
     schedule = IntervalSchedule(interval=timedelta(days=7))
 
     await flow.deploy(
@@ -121,24 +125,32 @@ async def register_for_category(cat: str) -> None:
         work_pool_name=WORK_POOL_NAME,
         parameters=params,
         schedule=schedule,
-        build=[
-            {
-                "prefect.deployments.steps.pip_install_requirements": {
-                    "requirements": "requirements.txt"
-                }
+        build=[{
+            "prefect.deployments.steps.pip_install_requirements": {
+                "requirements": "requirements.txt"
             }
-        ]
+        }],
     )
     print(f"   ✓ {name} registered/updated")
 
-async def main() -> None:
-    print(f"[DB] database_url: {_mask_db_url(DATABASE_URL)}")
-
+async def register_all() -> None:
     cats = await fetch_categories()
     print(f"Found categories: {cats}")
-    for cat in cats:
-        await register_for_category(cat)
 
+    deployments_created = 0
+    MAX_DEPLOYMENTS = 10  # safety: don’t exceed your Prefect limit
+
+    for cat in cats:
+        for title in TITLE_MAP.get(cat, [cat.replace("_", " ").title()]):
+            if deployments_created >= MAX_DEPLOYMENTS:
+                print(f"[WARN] Reached {MAX_DEPLOYMENTS} deployments. Skipping the rest.")
+                return
+            await register_for_title(cat, title)
+            deployments_created += 1
+
+async def main() -> None:
+    print(f"[DB] database_url: {_mask_db_url(DATABASE_URL)}")
+    await register_all()
     print("✅ All deployments registered/updated.")
 
 if __name__ == "__main__":
