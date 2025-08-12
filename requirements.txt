@@ -1,0 +1,6 @@
+prefect==3.*
+asyncpg
+python-dotenv
+pandas
+requests
+python-dateutil
