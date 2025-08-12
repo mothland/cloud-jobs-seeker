@@ -97,6 +97,13 @@ async def register_for_category(cat: str) -> None:
             work_pool_name=WORK_POOL_NAME,
             parameters=params,
             schedule=schedule,
+            build=[
+                {
+                    "prefect.deployments.steps.pip_install_requirements": {
+                        "requirements": "requirements.txt"
+                    }
+                }
+            ]
         )
         print(f"   ✓ {name} registered/updated")
 
