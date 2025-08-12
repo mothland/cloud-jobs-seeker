@@ -75,10 +75,9 @@ async def fetch_categories() -> List[str]:
 async def register_for_category(cat: str) -> None:
     titles = TITLE_MAP.get(cat, [cat.replace("_", " ").title()])
 
-    # Group locations: 'idf' for France, 'geneva' for Switzerland
+    # Combine France and Switzerland into a single plan
     plans = [
-        (f"{cat}-france", {"titles": titles, "category": cat, "location_preset": "idf", "page_limit": 2, "per_page": 50}),
-        (f"{cat}-switzerland", {"titles": titles, "category": cat, "location_preset": "geneva", "page_limit": 2, "per_page": 50}),
+        (f"{cat}-idf-switzerland", {"titles": titles, "category": cat, "location_preset": "combined_france_switzerland", "page_limit": 2, "per_page": 50}),
     ]
 
     for name, params in plans:
