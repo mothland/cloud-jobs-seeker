@@ -50,6 +50,7 @@ async def _init_pool() -> asyncpg.Pool:
             database_url,
             min_size=1,
             max_size=5,
+            statement_cache_size=0,
         )
     return _pool
 
