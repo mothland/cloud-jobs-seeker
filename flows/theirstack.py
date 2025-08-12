@@ -339,15 +339,17 @@ def search_jobs(
 # DB helpers
 # =========================
 
-async def get_existing_theirstack_external_ids() -> List[str]:
+async def get_existing_theirstack_external_ids(days: int = 30) -> List[str]:
     """
-    Fetch all external_id values for offers where source='theirstack'.
+    Fetch all external_id values for offers where source='theirstack'
+    and date_posted is within the last `days` days.
     Returns strings because the API expects string IDs.
     """
-    sql = """
+    sql = f"""
         SELECT external_id
         FROM jobs.offers
         WHERE source = 'theirstack'
+          AND date_posted >= (CURRENT_DATE - INTERVAL '{days} days')
     """
     async with connection() as conn:
         rows = await conn.fetch(sql)
