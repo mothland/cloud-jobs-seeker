@@ -61,8 +61,8 @@ def _load_api_keys() -> List[str]:
     if base_key:
         keys.append(base_key)
 
-    # Then check numbered keys up to 5
-    for i in range(2, 6):
+    # Then check numbered keys up to 6
+    for i in range(2, 7):
         k = _get_var(f"theirstack_api_key_{i}", f"THEIRSTACK_API_KEY_{i}")
         if k and k not in keys:
             keys.append(k)

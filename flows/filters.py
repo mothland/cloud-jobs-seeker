@@ -36,13 +36,17 @@ ILE_DE_FRANCE_CITIES = [
 
 
 GENEVA_CITIES = [
-    "Genève", "Vernier", "Meyrin", "Lancy", "Carouge", "Onex",
-    "Thônex", "Versoix", "Bernex", "Plan-les-Ouates", "Cologny",
-    "Le Grand-Saconnex", "Chêne-Bougeries", "Chêne-Bourg",
-    "Confignon", "Satigny", "Veyrier", "Perly-Certoux",
-    "Bardonnex", "Genthod", "Pregny-Chambésy", "Anières", "Jussy",
-    "Collonge-Bellerive", "Hermance", "Corsier", "Puplinge",
+    "Avully", "Avusy", "Bardonnex", "Bellevue", "Bernex", "Carouge",
+    "Cartigny", "Céligny", "Chancy", "Chêne-Bougeries", "Chêne-Bourg",
+    "Choulex", "Collex-Bossy", "Collonge-Bellerive", "Cologny",
+    "Confignon", "Corsier", "Dardagny", "Genève", "Genthod",
+    "Le Grand-Saconnex", "Gy", "Hermance", "Jussy", "Lancy",
+    "Meinier", "Meyrin", "Onex", "Perly-Certoux", "Plan-les-Ouates",
+    "Pregny-Chambésy", "Presinge", "Puplinge", "Russin", "Satigny",
+    "Soral", "Thônex", "Troinex", "Vandoeuvres", "Vernier",
+    "Versoix", "Veyrier", "Anières"
 ]
+
 
 LOCATION_PRESETS = {
     "idf": ILE_DE_FRANCE_CITIES,
