@@ -4,7 +4,7 @@ import random
 import time
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional, Iterable, Tuple
-from flows.filters import ILE_DE_FRANCE_CITIES, GENEVA_CITIES  # :contentReference[oaicite:0]{index=0}
+from flows.filters import ILE_DE_FRANCE_CITIES, TORONTO_CITIES
 
 import requests
 from dotenv import dotenv_values, find_dotenv
@@ -218,7 +218,7 @@ def _parse_date(s: Optional[str], default_tz_utc: bool = True):
 
 
 _IDF_SET = {c.lower() for c in ILE_DE_FRANCE_CITIES}
-_GENEVA_SET = {c.lower() for c in GENEVA_CITIES}
+_TORONTO_SET = {c.lower() for c in TORONTO_CITIES}
 
 def _infer_country_for_city(city: Optional[str]) -> Optional[str]:
     if not city:
@@ -226,8 +226,8 @@ def _infer_country_for_city(city: Optional[str]) -> Optional[str]:
     c = city.strip().lower()
     if c in _IDF_SET:
         return "FR"
-    if c in _GENEVA_SET:
-        return "CH"
+    if c in _TORONTO_SET:
+        return "CA"
     return None
 
 def _locations_to_strings(locations: List[Dict[str, Any]]) -> List[str]:
@@ -235,7 +235,7 @@ def _locations_to_strings(locations: List[Dict[str, Any]]) -> List[str]:
     Build display-friendly location strings and inject a country code when possible.
     Priority:
       1) Use API "country_code" if present
-      2) Else infer from city membership (Île-de-France -> FR, Geneva -> CH)
+      2) Else infer from city membership (Île-de-France -> FR, Toronto -> CA)
     """
     out: List[str] = []
     for loc in locations or []:
@@ -246,7 +246,6 @@ def _locations_to_strings(locations: List[Dict[str, Any]]) -> List[str]:
         if not cc:
             cc = _infer_country_for_city(city)
 
-        # Assemble best string we can
         parts = [p for p in (city, state, cc) if p]
         if parts:
             out.append(", ".join(parts))

@@ -43,10 +43,7 @@ DATABASE_URL   = _get_required("database_url")
 # ===============================================================
 
 # -------- GLOBAL BUDGET ----------------------------------------
-
-KEY_BUDGET = 200
-KEY_NUM = 6
-GLOBAL_MONTHLY_BUDGET = KEY_BUDGET*KEY_NUM
+GLOBAL_MONTHLY_BUDGET = int(os.getenv("global_monthly_budget", "1000"))
 # e.g. 1000 offers/month across all categories
 
 # Titles by DB category (used inside each category deployment)
@@ -84,7 +81,7 @@ def _mask_db_url(url: str) -> str:
 async def register_for_category(cat: str, weekly_budget: int) -> None:
     """
     ONE deployment per DB category.
-    The flow will split by country (CH, then FR) and fair-split per title.
+    The flow will split by country (CA, then FR) and fair-split per title.
     """
     titles = TITLE_MAP.get(cat, [cat.replace("_", " ").title()])
 
@@ -93,13 +90,13 @@ async def register_for_category(cat: str, weekly_budget: int) -> None:
         "titles": titles,
         "category": cat,
 
-        # fair split: 2 calls per title (CH + FR), compute per-call share inside the flow
+        # fair split: 2 calls per title (CA + FR), compute per-call share inside the flow
         "split_by_country": True,
 
-        # country-specific knobs
-        "ch_country_codes": ["CH"],
-        "ch_location_preset": "geneva",
-        "ch_posted_max_age_days": 30,
+        # country-specific knobs (Toronto + Île-de-France)
+        "ca_country_codes": ["CA"],
+        "ca_location_preset": "toronto",
+        "ca_posted_max_age_days": 30,
 
         "fr_country_codes": ["FR"],
         "fr_location_preset": "ile_de_france",

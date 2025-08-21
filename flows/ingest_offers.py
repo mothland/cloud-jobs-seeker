@@ -21,31 +21,31 @@ def _resolve_locations(preset: Optional[str]) -> List[str]:
 def _country_tuple_list(
     split_by_country: bool,
     generic_countries: Optional[List[str]],
-    ch_preset: Optional[str],
+    ca_preset: Optional[str],
     fr_preset: Optional[str],
-    ch_country_codes: Optional[List[str]],
+    ca_country_codes: Optional[List[str]],
     fr_country_codes: Optional[List[str]],
 ) -> List[Tuple[str, List[str], List[str]]]:
     """
     Returns a list of (label, country_codes, locations) to iterate over.
-    - When split_by_country=True, we return exactly two slices: CH and FR.
-    - Otherwise, legacy generic mode.
+    - When split_by_country=True, we return exactly two slices: CA and FR.
+    - Otherwise, legacy generic mode (default FR/idf).
     """
     slices: List[Tuple[str, List[str], List[str]]] = []
 
     if split_by_country:
-        # Switzerland slice
-        ch_codes = ch_country_codes or ["CH"]
-        ch_locs = _resolve_locations(ch_preset or "geneva")
-        slices.append(("CH", ch_codes, ch_locs))
+        # Canada slice (Toronto)
+        ca_codes = ca_country_codes or ["CA"]
+        ca_locs = _resolve_locations(ca_preset or "toronto")
+        slices.append(("CA", ca_codes, ca_locs))
 
-        # France slice
+        # France slice (Île-de-France)
         fr_codes = fr_country_codes or ["FR"]
         fr_locs = _resolve_locations(fr_preset or "ile_de_france")
         slices.append(("FR", fr_codes, fr_locs))
         return slices
 
-    # Fallback: generic mode
+    # Fallback: generic mode → France only
     countries = generic_countries or ["FR"]
     locations = _resolve_locations("ile_de_france")
     for code in countries:
@@ -68,9 +68,9 @@ async def ingest_offers(
     split_by_country: bool = False,
 
     # Country-specific knobs
-    ch_country_codes: Optional[List[str]] = None,
-    ch_location_preset: Optional[str] = None,
-    ch_posted_max_age_days: Optional[int] = None,
+    ca_country_codes: Optional[List[str]] = None,
+    ca_location_preset: Optional[str] = None,
+    ca_posted_max_age_days: Optional[int] = None,
 
     fr_country_codes: Optional[List[str]] = None,
     fr_location_preset: Optional[str] = None,
@@ -88,8 +88,8 @@ async def ingest_offers(
     """
     Fixed fair-split logic:
       - Each category gets its share of the global budget (passed in).
-      - Exactly one call per country per category (CH, FR).
-      - Budget split evenly between CH and FR.
+      - Exactly one call per country per category (CA, FR).
+      - Budget split evenly between CA and FR.
     """
     logger = get_run_logger()
     titles = titles or ["Data Engineer"]
@@ -98,9 +98,9 @@ async def ingest_offers(
     country_slices = _country_tuple_list(
         split_by_country=split_by_country,
         generic_countries=countries,
-        ch_preset=ch_location_preset,
+        ca_preset=ca_location_preset,
         fr_preset=fr_location_preset,
-        ch_country_codes=ch_country_codes,
+        ca_country_codes=ca_country_codes,
         fr_country_codes=fr_country_codes,
     )
 
@@ -118,8 +118,8 @@ async def ingest_offers(
         # Determine freshness per country (fallback to global)
         country_age_days = posted_max_age_days
         if split_by_country:
-            if label == "CH" and ch_posted_max_age_days is not None:
-                country_age_days = ch_posted_max_age_days
+            if label == "CA" and ca_posted_max_age_days is not None:
+                country_age_days = ca_posted_max_age_days
             if label == "FR" and fr_posted_max_age_days is not None:
                 country_age_days = fr_posted_max_age_days
 
