@@ -53,9 +53,10 @@ TITLE_MAP: Dict[str, List[str]] = {
         "Ingénieur Data", "Ingenieur data", "data architect", "architecte data"
     ],
     "data_analyst": ["Data Analyst"],
-    "cloud_engineer": [
-        "Cloud Engineer", "Cloud Architect",
-        "Ingénieur cloud", "ingenieur cloud", "architecte cloud",
+    "mlops": [
+        "MLOps", "Machine Learning Ops", "ML Ops", 
+        "Ingénieur MLOps", "Ingenieur MLOps", 
+        "MLOps Engineer", "MLOPs", "Machine Learning Operations"
     ],
     "dataops": ["DataOps", "Data Ops", "Data-Ops"],
     # Add more if you add rows in jobs.job_category_ref
@@ -65,15 +66,21 @@ async def fetch_categories() -> List[str]:
     """
     Read distinct categories from jobs.job_category_ref.
     Fall back to TITLE_MAP keys if DB is unreachable/empty.
+    Ignore categories we don’t want (e.g. cloud/platform engineer).
     """
     sql = "SELECT category FROM jobs.job_category_ref ORDER BY category"
     try:
         async with connection() as conn:
             rows = await conn.fetch(sql)
         cats = [r["category"] for r in rows]
-        return cats or list(TITLE_MAP.keys())
     except Exception:
-        return list(TITLE_MAP.keys())
+        cats = list(TITLE_MAP.keys())
+
+    # 🚫 Force-ignore certain categories
+    ignore = {"cloud_engineer", "platform_engineer"}
+    cats = [c for c in cats if c not in ignore]
+
+    return cats or list(TITLE_MAP.keys())
 
 def _mask_db_url(url: str) -> str:
     return re.sub(r"://([^:]+):([^@]+)@", r"://\1:***@", url)
