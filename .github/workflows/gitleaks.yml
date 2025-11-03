@@ -9,6 +9,7 @@ jobs:
   gitleaks:
     name: Run Gitleaks
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -16,13 +17,16 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y jq curl
+          sudo apt-get install -y jq curl tar
 
-      - name: Install Gitleaks
+      - name: Install Gitleaks (v8.28.0)
         run: |
-          echo "⬇️ Downloading Gitleaks..."
-          curl -fL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o /usr/local/bin/gitleaks
-          chmod +x /usr/local/bin/gitleaks
+          echo "⬇️ Downloading Gitleaks v8.28.0..."
+          curl -fL https://github.com/gitleaks/gitleaks/releases/download/v8.28.0/gitleaks_8.28.0_linux_x64.tar.gz -o gitleaks.tar.gz
+          echo "📦 Extracting..."
+          tar -xzf gitleaks.tar.gz
+          sudo mv gitleaks /usr/local/bin/gitleaks
+          sudo chmod +x /usr/local/bin/gitleaks
           /usr/local/bin/gitleaks version
 
       - name: Run scan
