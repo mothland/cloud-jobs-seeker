@@ -1,0 +1,10 @@
+title = "Custom Gitleaks Config"
+
+[allowlist]
+  description = "Ignore virtual envs and vendor folders"
+  paths = [
+    '''\.venv''',
+    '''__pycache__''',
+    '''node_modules''',
+    '''\.git'''
+  ]

@@ -1,0 +1,32 @@
+name: 🕵️ Gitleaks Security Scan
+
+on:
+  push:
+    branches: [ main, develop, "*" ]
+  pull_request:
+
+jobs:
+  gitleaks:
+    name: Run Gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Gitleaks
+        run: |
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o /usr/local/bin/gitleaks
+          chmod +x /usr/local/bin/gitleaks
+
+      - name: Run scan
+        id: scan
+        run: |
+          echo "🔍 Running Gitleaks..."
+          gitleaks detect --source . --no-git --report-path gitleaks-report.json --report-format json || true
+          leaks=$(jq '. | length' gitleaks-report.json)
+          echo "Leaks found: $leaks"
+          if [ "$leaks" -gt 0 ]; then
+            echo "❌ Too many leaks ($leaks). Push refused."
+            exit 1
+          fi
+          echo "✅ Repo clean."

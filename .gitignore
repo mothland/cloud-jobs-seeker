@@ -1,4 +1,15 @@
-# Ignore Python cache
+# Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*.egg-info/
+
+# Virtual env
+.venv/
+
+# Logs & reports
+gitleaks-report.json
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
