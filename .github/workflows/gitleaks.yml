@@ -13,20 +13,40 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq curl
+
       - name: Install Gitleaks
         run: |
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o /usr/local/bin/gitleaks
+          echo "⬇️ Downloading Gitleaks..."
+          curl -fL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o /usr/local/bin/gitleaks
           chmod +x /usr/local/bin/gitleaks
+          /usr/local/bin/gitleaks version
 
       - name: Run scan
         id: scan
         run: |
           echo "🔍 Running Gitleaks..."
-          gitleaks detect --source . --no-git --report-path gitleaks-report.json --report-format json || true
+          /usr/local/bin/gitleaks detect \
+            --source . \
+            --no-git \
+            --config .gitleaks.toml \
+            --report-path gitleaks-report.json \
+            --report-format json || true
+
+          if [ ! -f gitleaks-report.json ]; then
+            echo "⚠️ No report generated, possible download or run issue"
+            exit 1
+          fi
+
           leaks=$(jq '. | length' gitleaks-report.json)
           echo "Leaks found: $leaks"
+
           if [ "$leaks" -gt 0 ]; then
             echo "❌ Too many leaks ($leaks). Push refused."
             exit 1
           fi
+
           echo "✅ Repo clean."
