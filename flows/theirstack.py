@@ -130,7 +130,7 @@ def _post_with_retries(url: str, payload: Dict[str, Any], timeout: int = 20) -> 
     POST with:
     - key rotation (immediate on 401/402/403, round-robin per attempt)
     - retries with exponential backoff for transient failures (429/5xx/timeout)
-    - never logs actual keys; only key index.
+    - logs detailed reason text for 4xx errors
     """
     last_err: Optional[Exception] = None
     session = requests.Session()
@@ -146,19 +146,22 @@ def _post_with_retries(url: str, payload: Dict[str, Any], timeout: int = 20) -> 
         try:
             resp = session.post(url, json=payload, headers=headers, timeout=timeout)
             status = resp.status_code
-            print(f"[API] Attempt {attempt+1}/{MAX_RETRIES} using key#{key_idx} → Status {status}")
+            msg = resp.text.strip().replace("\n", " ")[:250]  # truncate for logs
+            print(f"[API] Attempt {attempt+1}/{MAX_RETRIES} using key#{key_idx} → Status {status} | {msg}")
 
             if 200 <= status < 300:
                 return resp.json()
 
-            # Unauthorized / Payment Required / Forbidden → rotate key immediately (no sleep)
+            # Immediate rotation on 401/402/403
             if status in SWITCH_KEY_STATUSES:
-                last_err = requests.HTTPError(f"{status} auth/quota error; rotating key")
-                continue  # next attempt uses next key
+                print(f"[API WARNING] Auth or quota issue (HTTP {status}) on key#{key_idx}. Rotating key…")
+                last_err = requests.HTTPError(f"HTTP {status}: {msg}")
+                continue
 
             # Transient statuses → backoff + retry
             if status in TRANSIENT_STATUSES:
-                last_err = requests.HTTPError(f"Transient HTTP {status}; will retry")
+                print(f"[API] Transient error {status} → retrying after backoff")
+                last_err = requests.HTTPError(f"Transient HTTP {status}: {msg}")
                 _sleep_backoff(attempt)
                 continue
 
@@ -179,7 +182,6 @@ def _post_with_retries(url: str, payload: Dict[str, Any], timeout: int = 20) -> 
             print(f"[API] Unexpected error: {e} (not retrying)")
             break
 
-    # Exhausted retries
     if last_err:
         raise last_err
     raise RuntimeError("Request failed for unknown reasons after retries")
