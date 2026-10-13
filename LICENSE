@@ -1,0 +1,23 @@
+cloud-jobs-seeker license
+
+Copyright (c) 2025-2026 the cloud-jobs-seeker author
+
+1. Do whatever you want with it.
+   You may use, copy, modify, merge, publish, distribute, sublicense, sell, and build commercial
+   products or services on this software and its source code, with or without changes, for any
+   purpose, without asking and without paying anything. Credit is appreciated but not required.
+
+2. No warranty, no liability.
+   The software is provided "as is", without warranty of any kind, express or implied, including
+   fitness for a particular purpose. The author is not responsible for anything that happens
+   because of its use: lost data, API charges, account suspensions, legal claims, or anything else.
+
+3. Follow other people's rules.
+   This software talks to third-party services (such as TheirStack, Supabase, GitHub, Prefect) and
+   handles job postings that may contain personal data. Using it does not give you any rights to
+   those services or that data. You are solely responsible for complying with:
+     - the terms of service, usage limits, and data licenses of every service you connect it to,
+       and of the websites the job postings come from; and
+     - data-protection and privacy law that applies to you, including the EU General Data
+       Protection Regulation (GDPR) where it applies.
+   Use that breaks those terms or laws is not permitted by this license.

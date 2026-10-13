@@ -1,0 +1,63 @@
+name: Ingest jobs
+
+on:
+  schedule:
+    # UTC. Mondays and Thursdays 06:00. Running at least weekly also keeps a free
+    # Supabase project from pausing. Adjust together with run_budget in searches.toml.
+    - cron: "0 6 * * 1,4"
+  workflow_dispatch:
+    inputs:
+      search:
+        description: "Only run this search (blank = all)"
+        required: false
+      dry_run:
+        description: "Dry run (print queries, no API credits used)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      THEIRSTACK_API_KEYS: ${{ secrets.THEIRSTACK_API_KEYS }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # Optional: keep your searches out of the (possibly public) repo by storing the contents of
+      # your searches.local.toml in a SEARCHES_TOML secret. Query details are then kept out of the logs.
+      - name: Use private searches
+        env:
+          SEARCHES_TOML: ${{ secrets.SEARCHES_TOML }}
+        run: |
+          if [ -n "$SEARCHES_TOML" ]; then
+            printf '%s\n' "$SEARCHES_TOML" > searches.local.toml
+            echo "JOBSEEKER_PRIVATE_SEARCHES=1" >> "$GITHUB_ENV"
+            echo "Using searches from the SEARCHES_TOML secret"
+          fi
+
+      - name: Apply migrations
+        if: ${{ !inputs.dry_run }}
+        run: python -m jobseeker setup
+
+      - name: Fetch jobs
+        env:
+          SEARCH: ${{ inputs.search }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          args=()
+          [ -n "$SEARCH" ] && args+=(--search "$SEARCH")
+          [ "$DRY_RUN" = "true" ] && args+=(--dry-run)
+          python -m jobseeker run "${args[@]}"
