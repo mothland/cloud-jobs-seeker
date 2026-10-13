@@ -1,0 +1,22 @@
+# What to search for. Edited with `python -m jobseeker ui`; you can also edit it by hand.
+# See the README ("Configuring searches") for what each setting does.
+
+[defaults]
+run_budget = 40
+max_age_days = 15
+per_page = 25
+exclude_seen_days = 30
+
+[regions.lyon_area]
+countries = ["FR"]
+locations = [
+  { id = 2996944, name = "Lyon, Auvergne-Rhône-Alpes, France" },
+  { id = 2996943, name = "Arrondissement de Lyon, Auvergne-Rhône-Alpes, France" },
+]
+
+[[search]]
+name = "Data"
+titles = ["Data"]
+regions = ["lyon_area"]
+seniority = ["junior", "mid_level"]
+employment = ["full_time"]

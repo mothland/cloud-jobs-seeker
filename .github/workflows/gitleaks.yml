@@ -1,56 +1,21 @@
-name: 🕵️ Gitleaks Security Scan
+name: Gitleaks
 
 on:
   push:
-    branches: [ main, develop, "*" ]
   pull_request:
 
 jobs:
   gitleaks:
-    name: Run Gitleaks
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # scan the full history, not just the latest commit
 
-      - name: Install dependencies
+      - name: Install Gitleaks
         run: |
-          sudo apt-get update -y
-          sudo apt-get install -y jq curl tar
+          curl -fsSL https://github.com/gitleaks/gitleaks/releases/download/v8.28.0/gitleaks_8.28.0_linux_x64.tar.gz | tar -xz gitleaks
+          ./gitleaks version
 
-      - name: Install Gitleaks (v8.28.0)
-        run: |
-          echo "⬇️ Downloading Gitleaks v8.28.0..."
-          curl -fL https://github.com/gitleaks/gitleaks/releases/download/v8.28.0/gitleaks_8.28.0_linux_x64.tar.gz -o gitleaks.tar.gz
-          echo "📦 Extracting..."
-          tar -xzf gitleaks.tar.gz
-          sudo mv gitleaks /usr/local/bin/gitleaks
-          sudo chmod +x /usr/local/bin/gitleaks
-          /usr/local/bin/gitleaks version
-
-      - name: Run scan
-        id: scan
-        run: |
-          echo "🔍 Running Gitleaks..."
-          /usr/local/bin/gitleaks detect \
-            --source . \
-            --no-git \
-            --config .gitleaks.toml \
-            --report-path gitleaks-report.json \
-            --report-format json || true
-
-          if [ ! -f gitleaks-report.json ]; then
-            echo "⚠️ No report generated, possible download or run issue"
-            exit 1
-          fi
-
-          leaks=$(jq '. | length' gitleaks-report.json)
-          echo "Leaks found: $leaks"
-
-          if [ "$leaks" -gt 0 ]; then
-            echo "❌ Too many leaks ($leaks). Push refused."
-            exit 1
-          fi
-
-          echo "✅ Repo clean."
+      - name: Scan
+        run: ./gitleaks detect --source . --config .gitleaks.toml --redact --verbose

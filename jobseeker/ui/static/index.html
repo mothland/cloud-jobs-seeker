@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jobseeker</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="bar">
+    <h1>Jobseeker</h1>
+    <nav class="tabs" data-i18n-label="nav.label">
+      <button type="button" data-view="offers" data-i18n="nav.offers"></button>
+      <button type="button" data-view="dashboard" data-i18n="nav.dashboard"></button>
+      <button type="button" data-view="settings" data-i18n="nav.settings"></button>
+    </nav>
+    <span class="status" id="saveStatus"></span>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="fr">FR</button>
+      <button type="button" data-lang="en">EN</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="fatal" class="msg err hidden"></div>
+
+<div id="view-offers" class="view hidden">
+  <div class="filters" id="offerFilters">
+    <input id="of_q" type="search" data-i18n-placeholder="o.searchPlaceholder" data-i18n-label="o.searchPlaceholder" autocomplete="off">
+    <button type="button" id="of_toggle" aria-expanded="false" aria-controls="of_panel"></button>
+    <select id="of_sort" data-i18n-label="o.sort"></select>
+  </div>
+  <div id="of_panel" class="filter-panel hidden"></div>
+  <div id="of_active" class="active-filters"></div>
+  <div id="offersMsg"></div>
+  <div class="offers-layout">
+    <div class="offers-list-wrap">
+      <div class="list-head"><span id="of_count" class="muted"></span></div>
+      <ul id="offersList" class="offers-list"></ul>
+      <div class="row"><button id="of_more" class="hidden" data-i18n="o.more"></button></div>
+    </div>
+    <aside id="offerDetail" class="offer-detail hidden" aria-live="polite"></aside>
+  </div>
+</div>
+
+<div id="view-dashboard" class="view hidden">
+  <div class="filters">
+    <select id="db_range" data-i18n-label="d.range"></select>
+    <select id="db_search" data-i18n-label="o.allSearches"></select>
+  </div>
+  <div id="dashMsg"></div>
+  <div id="dashboard"></div>
+</div>
+
+<div id="view-settings" class="view hidden">
+
+  <!-- 1. Connections -->
+  <section class="card">
+    <h2><span class="n">1</span><span data-i18n="s1.title"></span></h2>
+    <p class="lead" data-i18n="s1.lead"></p>
+
+    <label for="dbUrl" data-i18n="s1.db"></label>
+    <input id="dbUrl" type="password" autocomplete="off" spellcheck="false">
+    <div class="help" id="dbHint"></div>
+    <div class="help" data-i18n="s1.dbHelp"></div>
+
+    <label for="apiKeys" data-i18n="s1.keys"></label>
+    <textarea id="apiKeys" spellcheck="false" autocomplete="off"></textarea>
+    <div class="help" id="keysHint"></div>
+    <div class="help" data-i18n="s1.keysHelp"></div>
+
+    <div class="row">
+      <button class="primary" id="saveSecrets" data-i18n="s1.save"></button>
+      <button id="testDb" data-i18n="s1.test"></button>
+      <button id="setupDb" data-i18n="s1.setup"></button>
+    </div>
+    <div id="s1msg"></div>
+  </section>
+
+  <!-- 2. Budget -->
+  <section class="card">
+    <h2><span class="n">2</span><span data-i18n="s2.title"></span></h2>
+    <p class="lead" data-i18n="s2.lead"></p>
+    <div class="grid">
+      <div><label for="d_run_budget" data-i18n="s2.budget"></label><input id="d_run_budget" type="number" min="1"><div class="help" data-i18n="s2.budgetHelp"></div></div>
+      <div><label for="d_max_age_days" data-i18n="s2.age"></label><input id="d_max_age_days" type="number" min="1"><div class="help" data-i18n="s2.ageHelp"></div></div>
+      <div><label for="d_per_page" data-i18n="s2.page"></label><input id="d_per_page" type="number" min="1"><div class="help" data-i18n="s2.pageHelp"></div></div>
+      <div><label for="d_exclude_seen_days" data-i18n="s2.seen"></label><input id="d_exclude_seen_days" type="number" min="1"><div class="help" data-i18n="s2.seenHelp"></div></div>
+    </div>
+    <div class="grid">
+      <div><label for="runsPerWeek" data-i18n="s2.runs"></label><input id="runsPerWeek" type="number" min="1" value="2"><div class="help" data-i18n="s2.runsHelp"></div></div>
+    </div>
+    <div class="estimate" id="estimate"></div>
+  </section>
+
+  <!-- 3. Regions -->
+  <section class="card">
+    <h2><span class="n">3</span><span data-i18n="s3.title"></span></h2>
+    <p class="lead" data-i18n="s3.lead"></p>
+    <div id="regions"></div>
+    <div class="row"><button id="addRegion" data-i18n="s3.add"></button></div>
+  </section>
+
+  <!-- 4. Searches -->
+  <section class="card">
+    <h2><span class="n">4</span><span data-i18n="s4.title"></span></h2>
+    <p class="lead" data-i18n="s4.lead"></p>
+    <div id="searches"></div>
+    <div class="row"><button id="addSearch" data-i18n="s4.add"></button></div>
+  </section>
+
+  <!-- 5. Save & try -->
+  <section class="card">
+    <h2><span class="n">5</span><span data-i18n="s5.title"></span></h2>
+    <p class="lead" data-i18n="s5.lead"></p>
+    <div class="row">
+      <button class="primary" id="saveSettings" data-i18n="s5.save"></button>
+      <button id="dryRun" data-i18n="s5.dry"></button>
+      <button id="realRun" data-i18n="s5.run"></button>
+    </div>
+    <div id="s5msg"></div>
+    <div class="scroll"><table id="planTable" class="hidden"><thead><tr>
+      <th data-i18n="t.search"></th><th data-i18n="t.region"></th><th data-i18n="t.where"></th>
+      <th data-i18n="t.filters"></th><th data-i18n="t.age"></th><th data-i18n="t.max"></th><th data-i18n="t.count"></th>
+    </tr></thead><tbody></tbody></table></div>
+    <pre class="logs hidden" id="runLogs"></pre>
+  </section>
+</div>
+</main>
+
+<div id="tooltip" class="tooltip hidden" role="status"></div>
+<script src="i18n.js"></script>
+<script src="common.js"></script>
+<script src="settings.js"></script>
+<script src="offers.js"></script>
+<script src="dashboard.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
