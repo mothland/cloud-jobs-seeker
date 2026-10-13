@@ -2,6 +2,10 @@
 
 > This is an entirely vibe coded version of a project I initially did not vibe code, but wrote hastily as a way to find an "alternance" contract. I thought it could benefit some of my classmates in their job searching and, well, ended up vibe coding a polished version quickly. Quite tragically, it is made of static HTML and Python glued together in ways no soul would have willingly written in anything but a vibe-coded hobby tinkering attempt. If you're a recruiter, you can safely ignore this project if you're trying to evaluate programming skills. That's just a tool I thought would be useful for my awesome classmates :)
 
+**This is meant to be FORKED. Not just cloned, so that you can actually automate job search.**
+
+This example is looking for offers in Lyon, per the request of a classmate.
+
 **[English](#user-guide) · [Français](#guide-dutilisation) · [Technical reference](#technical-reference)**
 
 Collects job offers on a schedule and saves them in your own database, so you can browse and filter
