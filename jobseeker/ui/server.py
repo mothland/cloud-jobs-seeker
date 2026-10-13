@@ -134,8 +134,7 @@ def _clean_settings(payload: dict[str, Any]) -> dict[str, Any]:
 
 def save_settings(payload: dict[str, Any]) -> None:
     text = to_toml(_clean_settings(payload))
-    # Your edits go to the git-ignored searches.local.toml, never the committed example.
-    path = Path(os.environ["SEARCHES_FILE"]) if os.getenv("SEARCHES_FILE") else config.ROOT / "searches.local.toml"
+    path = config.searches_path()
     # Validate exactly what will be written before replacing the real file.
     with tempfile.NamedTemporaryFile("w", suffix=".toml", delete=False, encoding="utf-8") as tmp:
         tmp.write(text)

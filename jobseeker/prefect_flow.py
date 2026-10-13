@@ -5,9 +5,9 @@
     prefect work-pool create jobseeker --type prefect:managed
     python -m jobseeker.prefect_flow deploy
 
-`deploy` copies DATABASE_URL and THEIRSTACK_API_KEYS from your .env (and your searches.local.toml,
-if you have one) into Prefect Secret blocks, then registers a scheduled deployment that pulls
-this repo from git. Your own searches therefore never need to be committed.
+`deploy` copies DATABASE_URL and THEIRSTACK_API_KEYS from your .env into Prefect
+Secret blocks, then registers a scheduled deployment that pulls this repo from git
+(so it uses the searches.toml you've pushed).
 """
 from __future__ import annotations
 
@@ -25,22 +25,13 @@ SECRETS = {
     "jobseeker-theirstack-api-keys": "THEIRSTACK_API_KEYS",
 }
 
-SEARCHES_BLOCK = "jobseeker-searches"  # optional: the contents of your searches.local.toml
-
 PIP_PACKAGES = ["psycopg[binary]>=3.2", "requests>=2.31", "python-dotenv>=1.0"]
 
 
 def _load_secrets() -> None:
-    from jobseeker import config
-
     for block, env in SECRETS.items():
         if not os.getenv(env):
             os.environ[env] = Secret.load(block).get()
-    try:
-        searches = Secret.load(SEARCHES_BLOCK).get()
-    except ValueError:  # no such block: use the searches.toml from the repo
-        return
-    (config.ROOT / "searches.local.toml").write_text(searches, encoding="utf-8")
 
 
 class _PrefectHandler(logging.Handler):
@@ -79,12 +70,6 @@ def deploy(work_pool: str, cron: str, branch: str) -> None:
     for block, env in SECRETS.items():
         Secret(value=values[env]).save(block, overwrite=True)
         print(f"✓ Saved {env} to Prefect Secret '{block}'")
-
-    local = config.ROOT / "searches.local.toml"
-    if local.exists():
-        config.load_settings(local)  # refuse to upload a broken file
-        Secret(value=local.read_text(encoding="utf-8")).save(SEARCHES_BLOCK, overwrite=True)
-        print(f"✓ Saved searches.local.toml to Prefect Secret '{SEARCHES_BLOCK}' (re-run deploy after editing it)")
 
     from prefect.runner.storage import GitRepository
 

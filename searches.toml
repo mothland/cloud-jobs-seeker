@@ -1,34 +1,22 @@
-# Example searches. To make your own, open `python -m jobseeker ui` (Settings tab) or copy this
-# file to searches.local.toml and edit that: it's git-ignored, and used instead of this file
-# when it exists. Every option is described in the README ("Configuring searches").
-#
-# Each [[search]] runs once per region it lists: 2 searches x 2 regions = 4 API queries per run.
+# What to search for. Edited with `python -m jobseeker ui`; you can also edit it by hand.
+# See the README ("Configuring searches") for what each setting does.
 
 [defaults]
-# TheirStack charges 1 credit per job returned. This is the most jobs one run fetches, split
-# evenly across queries. Monthly credits used ~= run_budget x runs per month.
 run_budget = 40
-max_age_days = 15        # only jobs posted in the last N days
-per_page = 25            # 25 is the free-plan maximum
-exclude_seen_days = 30   # skip jobs already stored, so you don't pay for them twice
+max_age_days = 15
+per_page = 25
+exclude_seen_days = 30
 
-# Regions: country codes, optionally narrowed with `locations` (place IDs, found with the
-# settings page's place search), e.g. locations = [{ id = 1234567, name = "Some City" }].
-
-[regions.france]
+[regions.lyon_area]
 countries = ["FR"]
-
-[regions.canada]
-countries = ["CA"]
-
-[[search]]
-name = "data_engineer"
-regions = ["france", "canada"]
-titles = ["Data Engineer", "Ingénieur Data", "Ingenieur Data", "Analytics Engineer"]
-exclude_titles = ["Stage", "Alternance", "Internship"]
+locations = [
+  { id = 2996944, name = "Lyon, Auvergne-Rhône-Alpes, France" },
+  { id = 2996943, name = "Arrondissement de Lyon, Auvergne-Rhône-Alpes, France" },
+]
 
 [[search]]
-name = "data_analyst"
-regions = ["france", "canada"]
-titles = ["Data Analyst", "Analyste de données", "Analyste de donnees"]
-exclude_titles = ["Stage", "Alternance", "Internship"]
+name = "Data"
+titles = ["Data"]
+regions = ["lyon_area"]
+seniority = ["junior", "mid_level"]
+employment = ["full_time"]

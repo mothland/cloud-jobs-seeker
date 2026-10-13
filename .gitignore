@@ -12,9 +12,7 @@ venv/
 
 # Logs & reports
 gitleaks-report.json
-# Your own searches (the app uses this file instead of the example searches.toml when it exists)
-searches.local.toml
-searches*.toml.bak
+searches.toml.bak
 *.log
 
 # OS files

@@ -61,12 +61,7 @@ def redact(text: str) -> str:
 
 
 def searches_path() -> Path:
-    """SEARCHES_FILE if set, else searches.local.toml (git-ignored, for your own searches) if it exists,
-    else the example searches.toml."""
-    if os.getenv("SEARCHES_FILE"):
-        return Path(os.environ["SEARCHES_FILE"])
-    local = ROOT / "searches.local.toml"
-    return local if local.exists() else ROOT / "searches.toml"
+    return Path(os.getenv("SEARCHES_FILE") or ROOT / "searches.toml")
 
 
 # searches.toml key -> (TheirStack field, kind). Kinds: "text" = words/phrases, "regex" = regular

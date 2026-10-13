@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 from dataclasses import dataclass
 
 from jobseeker import config, db
@@ -68,11 +67,8 @@ def run(only: list[str] | None = None, dry_run: bool = False) -> dict:
         for q in queries:
             size, pages = _pages(q.max_results, settings.per_page)
             payload = q.payload(page=0, limit=size, exclude_ids=[])
-            if os.getenv("JOBSEEKER_PRIVATE_SEARCHES"):  # searches came from a secret: don't echo them into CI logs
-                log.info("[dry run] %s / %s: %d page(s) of %d", q.search, q.region.name, pages, size)
-            else:
-                log.info("[dry run] %s / %s: %d page(s) of %d\n  %s", q.search, q.region.name, pages, size,
-                         json.dumps(payload, ensure_ascii=False))
+            log.info("[dry run] %s / %s: %d page(s) of %d\n  %s", q.search, q.region.name, pages, size,
+                     json.dumps(payload, ensure_ascii=False))
         return {"queries": len(queries), "fetched": 0, "stored": 0, "dry_run": True}
 
     client = TheirStackClient(config.theirstack_api_keys())

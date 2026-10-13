@@ -36,18 +36,6 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      # Optional: keep your searches out of the (possibly public) repo by storing the contents of
-      # your searches.local.toml in a SEARCHES_TOML secret. Query details are then kept out of the logs.
-      - name: Use private searches
-        env:
-          SEARCHES_TOML: ${{ secrets.SEARCHES_TOML }}
-        run: |
-          if [ -n "$SEARCHES_TOML" ]; then
-            printf '%s\n' "$SEARCHES_TOML" > searches.local.toml
-            echo "JOBSEEKER_PRIVATE_SEARCHES=1" >> "$GITHUB_ENV"
-            echo "Using searches from the SEARCHES_TOML secret"
-          fi
-
       - name: Apply migrations
         if: ${{ !inputs.dry_run }}
         run: python -m jobseeker setup

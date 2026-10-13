@@ -63,8 +63,8 @@ A page opens in your browser (if not, open the link shown in the terminal). It h
 5. **Save and try:** **Dry run** shows what would be searched, for free. **Count** tells you how
    many jobs a query matches in total (at most 1 credit). **Run now** really fetches jobs.
 
-Everything stays on your computer: the connection details go in a `.env` file and your searches in
-`searches.local.toml`. Neither is ever uploaded with the project. To stop the app, press
+The connection details go in a `.env` file, which stays on your computer and is never uploaded.
+Your searches go in `searches.toml`, which is part of the project. To stop the app, press
 **Ctrl+C** in the terminal.
 
 ### 4. Follow your applications
@@ -88,9 +88,9 @@ copy of the project on GitHub (a **Fork**).
 1. In your copy on GitHub, go to **Settings → Secrets and variables → Actions → New repository
    secret**, and add two secrets: `DATABASE_URL` (the Supabase connection string, with your
    password) and `THEIRSTACK_API_KEYS` (your key).
-2. Add a third secret, `SEARCHES_TOML`, and paste the whole content of your `searches.local.toml`
-   into it. That way your searches stay private even if your copy is public. Update it whenever
-   you change your searches. (Without it, the example searches in `searches.toml` are used.)
+2. Whenever you change your searches, put your `searches.toml` in your copy on GitHub: commit and
+   push it, or on the GitHub website use **Add file → Upload files**. The scheduled runs use the
+   version on GitHub.
 3. Open the **Actions** tab, choose **Ingest jobs**, and click **Run workflow** to check that it works.
 
 The days and times are in the [technical reference](#option-a-github-actions-simplest).
@@ -155,9 +155,9 @@ Commencez par **Réglages** et suivez les étapes dans l'ordre :
    **Compter** indique combien d'offres correspondent à une requête au total (1 crédit maximum).
    **Lancer maintenant** récupère vraiment les offres.
 
-Tout reste sur votre ordinateur : les connexions dans un fichier `.env`, vos recherches dans
-`searches.local.toml`. Aucun des deux n'est jamais envoyé avec le projet. Pour arrêter
-l'application, appuyez sur **Ctrl+C** dans le terminal.
+Les connexions vont dans un fichier `.env`, qui reste sur votre ordinateur et n'est jamais envoyé.
+Vos recherches vont dans `searches.toml`, qui fait partie du projet. Pour arrêter l'application,
+appuyez sur **Ctrl+C** dans le terminal.
 
 ### 4. Suivre vos candidatures
 
@@ -182,10 +182,9 @@ propre copie du projet sur GitHub (un **Fork**).
 1. Dans votre copie sur GitHub, allez dans **Settings → Secrets and variables → Actions → New
    repository secret** et ajoutez deux secrets : `DATABASE_URL` (la chaîne de connexion Supabase,
    avec votre mot de passe) et `THEIRSTACK_API_KEYS` (votre clé).
-2. Ajoutez un troisième secret, `SEARCHES_TOML`, et collez-y tout le contenu de votre
-   `searches.local.toml`. Vos recherches restent ainsi privées, même si votre copie est publique.
-   Mettez-le à jour quand vous modifiez vos recherches. (Sans lui, ce sont les recherches d'exemple
-   de `searches.toml` qui sont utilisées.)
+2. À chaque modification de vos recherches, mettez votre `searches.toml` dans votre copie sur
+   GitHub : faites un commit et un push, ou sur le site de GitHub utilisez **Add file → Upload
+   files**. Les lancements automatiques utilisent la version présente sur GitHub.
 3. Ouvrez l'onglet **Actions**, choisissez **Ingest jobs** et cliquez sur **Run workflow** pour
    vérifier que tout fonctionne.
 
@@ -244,10 +243,10 @@ python -m jobseeker run             # fetches and stores jobs
 
 ## Configuring searches
 
-The repo ships an example, `searches.toml`. Put your own searches in **`searches.local.toml`**
-(same format, git-ignored): when it exists, it's used instead of the example, so your searches
-never end up in git. `SEARCHES_FILE=path` overrides both. The settings page always saves to
-`searches.local.toml` (without comments, keeping the previous version as `searches.local.toml.bak`).
+Everything lives in `searches.toml`, which is committed: the version in this repo is the author's
+own, so a fork starts from a working config and edits it. Scheduled runs use the version that's
+pushed. The settings page edits the same file (it rewrites it without comments and keeps the
+previous version as `searches.toml.bak`). `SEARCHES_FILE=path` points the app at another file.
 
 The format:
 
@@ -325,9 +324,7 @@ credits (or is rejected), the run moves on to the next.
 
 1. Push the repo to GitHub (a private repo is fine).
 2. Go to **Settings → Secrets and variables → Actions** and add two repository secrets:
-   `DATABASE_URL` and `THEIRSTACK_API_KEYS`. Optionally add `SEARCHES_TOML` with the content of
-   your `searches.local.toml`: the workflow writes it to that file before running, and keeps query
-   details out of the logs. Without it, the committed `searches.toml` is used.
+   `DATABASE_URL` and `THEIRSTACK_API_KEYS`. Runs use the `searches.toml` on the branch.
 3. Under **Actions → Ingest jobs → Run workflow**, start a first run by hand to check it works.
    There's a *dry run* checkbox that costs no credits.
 
@@ -350,15 +347,14 @@ python -m jobseeker setup
 python -m jobseeker.prefect_flow deploy
 ```
 
-`deploy` copies `DATABASE_URL`, `THEIRSTACK_API_KEYS` and (if you have one) your
-`searches.local.toml` into Prefect Secret blocks, and creates a deployment that runs on Mondays and
-Thursdays and pulls the code from your git remote. Options: `--cron "0 6 * * *"`, `--branch main`,
-`--work-pool jobseeker`.
+`deploy` copies `DATABASE_URL` and `THEIRSTACK_API_KEYS` from your `.env` into Prefect Secret
+blocks, and creates a deployment that runs on Mondays and Thursdays and pulls the code from your
+git remote. Options: `--cron "0 6 * * *"`, `--branch main`, `--work-pool jobseeker`.
 
 - **Private repo:** set `JOBSEEKER_GIT_TOKEN` in `.env` before deploying (on GitHub: a fine-grained
   token with read-only *Contents* access to this repo).
-- **Changing your searches or secrets:** edit them locally and run `deploy` again. (Without a
-  `searches.local.toml`, the committed `searches.toml` is used, and changes to it apply once pushed.)
+- **Changes to `searches.toml`** take effect on the next run once they're pushed; no redeploy needed.
+- **Changing secrets:** edit `.env` and run `deploy` again.
 
 Pick one option. Running both would fetch every search twice.
 
@@ -426,7 +422,7 @@ jobseeker/
   ui/server.py     local web app (python -m jobseeker ui)
   ui/static/       its pages: offers, dashboard, settings
 migrations/        SQL schema
-searches.toml      example searches (yours go in searches.local.toml)
+searches.toml      what to search for (edit it in your fork)
 ```
 
 ## License
